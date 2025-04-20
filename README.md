@@ -1,35 +1,46 @@
 # 🌦️ Weather App
 
-A simple web app that shows real-time weather information using the OpenWeatherMap API. Built with **HTML**, **CSS**, and **JavaScript**.
+A sleek and simple weather web application that displays real-time weather conditions and a 5-day forecast using the OpenWeatherMap API. Built using HTML, CSS, and JavaScript — this app is responsive and easy to use.
 
 ---
 
-## 📸 Preview
+## 📌 Features
 
-![Screenshot](screenshot.png) <!-- optional image -->
+- 🌍 Search any city worldwide
+- 🌡️ View current temperature, weather status, humidity, and wind speed
+- 🕔 Get a 5-day forecast with icons and temperature
+- 🌘 Dark/Light mode toggle
+- 📱 Mobile responsive design
+- ⚠️ Error handling for invalid city names
 
 ---
 
-## 🚀 Features
+## 🚀 Live Demo
 
-- 🌍 Search for any city in the world
-- 📡 Real-time weather data
-- 🌡️ Displays temperature, humidity, wind speed, and weather condition
-- 🎨 Responsive and clean UI
+👉 [Click here to view the app live](https://arjumaan.github.io/weather-app/) *(replace with actual URL after deployment)*
 
 ---
 
 ## 🛠️ Tech Stack
 
-- HTML
-- CSS
-- JavaScript (Vanilla)
-- OpenWeatherMap API
+- **HTML5**
+- **CSS3**
+- **JavaScript (Vanilla)**
+- **OpenWeatherMap API**
 
 ---
 
-## 🧪 How to Run Locally
+## 🖼️ Screenshots
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/your-username/weather-app.git
+![Screenshot 1](./screenshot.png)  
+*Add more screenshots if needed.*
+
+---
+
+## 📥 Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Arjumaan/weather-app.git
+cd weather-app
