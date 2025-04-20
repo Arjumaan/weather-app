@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- The root element of the HTML document -->
+
+<head>
+    <!-- Metadata and links for the document -->
+    <meta charset="UTF-8" />
+    <!-- Specifies the character encoding for the document -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Ensures proper rendering and touch zooming on mobile devices -->
+    <title>Weather App</title>
+    <!-- The title of the web page -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Link to the external CSS file -->
+</head>
+
+<body>
+
+    <!-- Theme toggle Between Dark and Light mode-->
+    <button id="theme-toggle" aria-label="Toggle Dark/Light Mode">🌙</button>
+
+    <!-- Main content of the web page -->
+    <div class="container">
+        <!-- A container for the app's content -->
+        <h1>🌤️ Weather App</h1>
+        <!-- The title of the app -->
+        <input type="text" id="cityInput" placeholder="Enter city" />
+        <!-- Input field for the user to enter a city name -->
+        <button onclick="getWeather()">Get Weather</button>
+        <!-- Button to trigger the getWeather function -->
+        <div id="weatherResult"></div>
+        <!-- Div to display the weather result -->
+        <div id="loader" style="display: none;">Loading...</div>
+    </div>
+    
+    <div id="forecast">
+        <h3>5-Day Forecast</h3>
+        <div id="forecast-cards" class="forecast-cards"></div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <!-- Link to the external JavaScript file -->
+</body>
+
+</html>
