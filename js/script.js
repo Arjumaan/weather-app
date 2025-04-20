@@ -1,152 +1,137 @@
-const themeToggle = document.getElementById("theme-toggle");
+// ==== CONFIG ====
+const apiKey = "9834e32995d82b23c2c0d248e01f468c";
+const weatherEl = document.getElementById("weatherResult");
+const loaderEl  = document.getElementById("loader");
+const errorEl   = document.getElementById("error");
 
-// On click, toggle dark-mode class and update button icon + localStorage
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  const isDark = document.body.classList.contains("dark-mode");
-  themeToggle.textContent = isDark ? "☀️" : "🌙";
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-});
-
-// On page load, apply saved theme
-window.addEventListener("DOMContentLoaded", () => {
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark-mode");
-    themeToggle.textContent = "☀️";
-  }
-});
-
-const loader = document.getElementById("loader");
-
-function showLoader() {
-  loader.style.display = "block";
+// ==== THEME TOGGLE ====
+function toggleMode() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark":"light");
+}
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
 }
 
-function hideLoader() {
-  loader.style.display = "none";
-}
+// ==== HELPERS ====
+function showLoader(){ loaderEl.style.display = "block"; }
+function hideLoader(){ loaderEl.style.display = "none"; }
 
-// Weather API
-const apiKey = "9834e32995d82b23c2c0d248e01f468c"; 
-const FORECAST_API_URL = `https://api.openweathermap.org/data/2.5/forecast?appid=9834e32995d82b23c2c0d248e01f468c&units=metric`;
-
-
-// NEW: displayWeather takes the API response and updates the UI
+// ==== DISPLAY FUNCTIONS ====
 function displayWeather(data) {
-  const result = document.getElementById("weatherResult");
-  result.innerHTML = `
+  errorEl.textContent = "";
+  const cond = data.weather[0].main;
+  const temp = data.main.temp.toFixed(1);
+  const iconCode = data.weather[0].icon;
+  const desc     = data.weather[0].description;
+
+  weatherEl.innerHTML = `
+   <div class="weather-icon">
+     <img src="https://openweathermap.org/img/wn/${iconCode}@4x.png"
+          alt="${desc}" title="${desc}">
+    </div>
     <h2>${data.name}, ${data.sys.country}</h2>
-    <p>🌡️ Temp: ${data.main.temp} °C</p>
-    <p>☁️ Weather: ${data.weather[0].description}</p>
-    <p>💨 Wind: ${data.wind.speed} m/s</p>
-  `;
+    <p>${cond}: ${temp}°C</p>
+    <p>💧 ${data.main.humidity}%  💨 ${data.wind.speed} m/s</p>
+    <p>Last updated: ${new Date(data.dt * 1000).toLocaleString()}</p>`;
 }
 
-async function getWeather() {
-  const city = document.getElementById("cityInput").value;
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+function displayForecast(data) {
+  const fc = document.getElementById("forecast-cards");
+  fc.innerHTML = "";
+  const daily = data.list.filter((_, i) => i % 8 === 0);
 
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.cod === 200) {
-  displayWeather(data);
-  fetchForecast(city); // ADD THIS
-}
- else {
-    document.getElementById("weatherResult").innerText = "City not found!";
-  }
+  daily.forEach(e => {
+    const date = new Date(e.dt_txt).toLocaleDateString(undefined, {
+      weekday:"short", month:"short", day:"numeric"
+    });
+    const iconCode = e.weather[0].icon;
+    const desc     = e.weather[0].description;
+    const t        = e.main.temp.toFixed(1);
+
+fc.innerHTML += `
+  <div class="forecast-card">
+    <h4>${date}</h4>
+    <div class="weather-icon">
+      <img src="https://openweathermap.org/img/wn/${iconCode}@2x.png"
+           alt="${desc}" title="${desc}">
+    </div>
+    <p>${t}°C</p>
+  </div>
+`;
+
+  });
 }
 
+// ==== FETCH FUNCTIONS ====
 async function fetchWeather(city) {
-  showLoader();
+  showLoader(); errorEl.textContent = "";
   try {
-    const response = await fetch(`${API_URL}&q=${city}`);
-    if (!response.ok) {
-      throw new Error("City not found");
-    }
-    const data = await response.json();
-    displayCurrentWeather(data);
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+    );
+    if (!res.ok) throw new Error("City not found");
+    const data = await res.json();
+    displayWeather(data);
     fetchForecast(city);
-  } catch (error) {
-    alert(error.message || "Failed to fetch weather data.");
+  } catch (err) {
+    errorEl.textContent = err.message;
   } finally {
     hideLoader();
   }
 }
-
-async function fetchWeatherByCoords(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.cod === 200) {
-      displayWeather(data);
-      // Optional: trigger forecast
-      fetchForecast(data.name);
-    } else {
-      console.error("Geo fetch error:", data);
-    }
-  } catch (err) {
-    console.error("Network error:", err);
-  }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        fetchWeatherByCoords(latitude, longitude);
-      },
-      (err) => {
-        console.warn("Geolocation denied or failed:", err);
-      }
-    );
-  }
-});
 
 async function fetchForecast(city) {
   showLoader();
   try {
-    const response = await fetch(`${FORECAST_API_URL}&q=${city}`);
-    if (!response.ok) {
-      throw new Error("Forecast not available.");
-    }
-    const data = await response.json();
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+    );
+    if (!res.ok) throw new Error("Forecast unavailable");
+    const data = await res.json();
     displayForecast(data);
-  } catch (error) {
-    alert(error.message || "Could not fetch forecast data.");
+  } catch (err) {
+    console.warn(err);
   } finally {
     hideLoader();
   }
 }
 
-function displayForecast(data) {
-  const forecastContainer = document.getElementById("forecast-cards");
-  forecastContainer.innerHTML = ""; // Clear old cards
+// ==== MANUAL SEARCH ====
+function getWeather() {
+  const city = document.getElementById("cityInput").value.trim();
+  if (city) fetchWeather(city);
+  else errorEl.textContent = "Please enter a city.";
+}
 
-  // One forecast every 8th item (~1 per day)
-  const dailyData = data.list.filter((_, index) => index % 8 === 0);
-
-  dailyData.forEach((entry) => {
-    const date = new Date(entry.dt_txt).toLocaleDateString("en-US", {
-      weekday: "short", month: "short", day: "numeric"
+// ==== AUTO LOCATION ON LOAD ====
+window.addEventListener("DOMContentLoaded", () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude);
     });
+  }
+});
 
-    const icon = entry.weather[0].icon;
-    const temp = entry.main.temp;
-    const desc = entry.weather[0].description;
+async function fetchWeatherByCoords(lat, lon) {
+  showLoader();
+  try {
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+    );
+    if (!res.ok) throw new Error("Geo location failed");
+    const data = await res.json();
+    displayWeather(data);
 
-    const card = `
-      <div class="forecast-card">
-        <h4>${date}</h4>
-        <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${desc}" />
-        <p>${temp} °C</p>
-        <small>${desc}</small>
-      </div>
-    `;
+    const forecastRes = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+    );
+    const forecastData = await forecastRes.json();
+    displayForecast(forecastData);
 
-    forecastContainer.innerHTML += card;
-  });
+  } catch (err) {
+    console.warn(err);
+  } finally {
+    hideLoader();
+  }
 }
